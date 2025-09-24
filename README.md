@@ -1,6 +1,9 @@
 # Astro Boom! 💥
 
-A powerful command-line tool to quickly scaffold modern static websites with Astro, Tailwind CSS, Decap CMS, and automatic deployment to Netlify.
+**Boom!** Create production-ready static sites in seconds. A powerful CLI tool that scaffolds modern websites with Astro, Tailwind CSS, Decap CMS, and automatic deployment to Netlify.
+
+[![npm version](https://badge.fury.io/js/astro-boom.svg)](https://www.npmjs.com/package/astro-boom)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
 
@@ -42,30 +45,52 @@ npx astro-boom
 
 ## Usage
 
+### Interactive Mode (Default)
+
 Run the CLI and follow the interactive prompts:
 
 ```bash
+npx astro-boom
+
+# Or after global install:
 astro-boom
 ```
 
-Or use with npm/yarn create commands:
-
-```bash
-# npm
-npm create astro-boom@latest
-
-# yarn
-yarn create astro-boom
-
-# pnpm
-pnpm create astro-boom
-```
-
-The CLI will ask you:
+The CLI will guide you through:
 1. **Project name** - Your site's directory name
 2. **GitHub repository** - Optionally create a private GitHub repo
 3. **Netlify deployment** - Optionally deploy to Netlify
 4. **Analytics** - Choose between Plausible or none
+
+### Non-Interactive Mode
+
+For CI/CD pipelines or quick scaffolding:
+
+```bash
+npx astro-boom --non-interactive my-project-name
+```
+
+This creates a project with default settings (no GitHub, no Netlify, no analytics).
+
+### Quick Start Example
+
+```bash
+# Create a new site
+npx astro-boom
+
+# Navigate to your project
+cd your-project-name
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
 
 ## Project Structure
 
@@ -97,17 +122,20 @@ Access the CMS at `/admin` after deploying to Netlify:
 3. Invite users or enable registration
 4. Start editing content through the web interface
 
-## Development
+## Available Scripts
 
-After creating your site:
+After creating your site, these scripts are available:
 
 ```bash
-cd your-site
-npm install
-npm run dev
-```
+# Start development server with hot reload
+npm run dev             # → http://localhost:4321
 
-Visit `http://localhost:4321` to see your site.
+# Build for production + generate search index
+npm run build
+
+# Preview production build
+npm run preview
+```
 
 ## Building and Deployment
 

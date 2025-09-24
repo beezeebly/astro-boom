@@ -1,0 +1,34 @@
+# Source files
+src/
+*.tsx
+*.ts
+
+# Test files
+test/
+test-*.js
+test-*.sh
+*.test.js
+jest.config.js
+coverage/
+
+# Development files
+.gitignore
+.git/
+tsconfig.json
+.DS_Store
+*.log
+.env*
+
+# Test outputs
+test-boom-site/
+test-astro-site/
+integration-test-site/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Only include built files
+!dist/
