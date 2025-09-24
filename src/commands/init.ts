@@ -290,9 +290,11 @@ const { title, description = 'A modern community website' } = Astro.props;
       </div>
     </footer>
 
-    <script src="/pagefind/pagefind-ui.js"></script>
-    <script>
-      new PagefindUI({ element: "#search" });
+    <script src="/pagefind/pagefind-ui.js" is:inline></script>
+    <script is:inline>
+      window.addEventListener('DOMContentLoaded', () => {
+        new PagefindUI({ element: "#search" });
+      });
     </script>
   </body>
 </html>`;

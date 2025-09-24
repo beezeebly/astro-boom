@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+
+set timeout 30
+spawn node dist/cli.js
+
+expect "Project name:"
+send "test-astro-boom-site\r"
+
+expect "Create GitHub repository?"
+send "\033\[B\r"
+
+expect "Deploy to Netlify?"
+send "\033\[B\r"
+
+expect "Choose analytics provider:"
+send "\r"
+
+expect "Success!"
+expect eof

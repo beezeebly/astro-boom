@@ -9,6 +9,28 @@ import { setupGitHub } from './commands/github.js';
 import { deployToNetlify } from './commands/deploy.js';
 import chalk from 'chalk';
 
+// Check for non-interactive mode
+if (process.argv.includes('--non-interactive')) {
+  const projectName = process.argv[3] || 'my-astro-site';
+  console.log(chalk.cyan('💥 Astro Boom! - Creating project in non-interactive mode'));
+  console.log(chalk.blue(`Project: ${projectName}`));
+
+  createProject({ name: projectName, analytics: 'none' })
+    .then(() => {
+      console.log(chalk.green('✅ Success!'));
+      console.log(`Your static site has been created at: ${chalk.cyan(projectName)}`);
+      console.log('\nNext steps:');
+      console.log(`  cd ${projectName}`);
+      console.log('  npm install');
+      console.log('  npm run dev');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error(chalk.red('❌ Error:'), error.message);
+      process.exit(1);
+    });
+} else {
+
 interface AppState {
   step: 'name' | 'github' | 'netlify' | 'analytics' | 'creating' | 'done';
   projectName: string;
@@ -166,3 +188,4 @@ const App = () => {
 };
 
 render(<App />);
+}

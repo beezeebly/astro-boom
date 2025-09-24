@@ -1,0 +1,38 @@
+---
+const features = [
+  {
+    title: "Community Events",
+    description: "Regular events bringing people together",
+    icon: "📅"
+  },
+  {
+    title: "Volunteer Opportunities",
+    description: "Make a difference in your community",
+    icon: "🤝"
+  },
+  {
+    title: "Resources & Support",
+    description: "Access helpful resources and get support",
+    icon: "📚"
+  }
+];
+---
+
+<section class="py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold text-gray-900">What We Do</h2>
+      <p class="mt-4 text-lg text-gray-600">Supporting our community in meaningful ways</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {features.map((feature) => (
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+          <div class="text-4xl mb-4">{feature.icon}</div>
+          <h3 class="text-xl font-semibold mb-2">{feature.title}</h3>
+          <p class="text-gray-600">{feature.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
