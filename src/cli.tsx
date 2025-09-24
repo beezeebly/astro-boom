@@ -87,7 +87,7 @@ const App = () => {
         <Text bold color="cyan">💥 Astro Boom! - Create Your Static Site</Text>
         <Box marginTop={1}>
           <Text>Project name: </Text>
-          <TextInput value={state.projectName} onChange={setState.bind(null, {...state, projectName})} onSubmit={handleProjectName} />
+          <TextInput value={state.projectName} onChange={(value) => setState({...state, projectName: value})} onSubmit={handleProjectName} />
         </Box>
       </Box>
     );
