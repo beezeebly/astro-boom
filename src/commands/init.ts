@@ -52,7 +52,6 @@ async function createPackageJson(projectPath: string, name: string) {
       "@astrojs/netlify": "^4.0.0",
       "@astrojs/tailwind": "^5.0.0",
       "astro": "^4.0.0",
-      "decap-cms": "^3.0.0",
       "tailwindcss": "^3.4.0"
     },
     devDependencies: {
@@ -852,14 +851,19 @@ async function createAdminPanel(projectPath: string, newsLabel: string, teamLabe
   const teamTitle = teamLabel.charAt(0).toUpperCase() + teamLabel.slice(1);
 
   const adminHtml = `<!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Content Manager</title>
+    <link href="https://unpkg.com/sveltia-cms@^0.39.0/dist/sveltia-cms.css" rel="stylesheet" />
   </head>
   <body>
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <script src="https://unpkg.com/sveltia-cms@^0.39.0/dist/sveltia-cms.js" type="module"></script>
+    <script>
+      // Initialize Sveltia CMS
+      window.CMS.init();
+    </script>
   </body>
 </html>`;
 

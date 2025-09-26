@@ -1,8 +1,8 @@
 # Astro Boom! 💥
 
-**Boom!** Create production-ready static sites in seconds. A powerful CLI tool that scaffolds modern websites with Astro, Tailwind CSS, Decap CMS, and automatic deployment to Netlify.
+**Boom!** Create production-ready static sites in seconds. A powerful CLI tool that scaffolds modern websites with Astro, Tailwind CSS, Sveltia CMS, and automatic deployment to Netlify.
 
-[![npm version](https://badge.fury.io/js/astro-boom.svg)](https://www.npmjs.com/package/astro-boom)
+[![npm version](https://img.shields.io/npm/v/astro-boom?cache=300)](https://www.npmjs.com/package/astro-boom)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
@@ -11,7 +11,7 @@
 - **Astro** - Lightning-fast static site generator
 - **Tailwind CSS** - Utility-first CSS framework
 - **MDX** - Markdown with JSX components
-- **Decap CMS** (formerly Netlify CMS) - Git-based content management
+- **Sveltia CMS** - Modern, lightweight Git-based CMS (replaces Decap CMS)
 - **Pagefind** - Static search that works offline
 - **Netlify Forms** - Serverless form handling
 - **Plausible Analytics** - Privacy-first analytics
@@ -114,7 +114,7 @@ your-site/
 │       ├── events/       # Event detail pages
 │       └── [people/team].astro  # Members page
 ├── public/
-│   ├── admin/           # Decap CMS admin panel
+│   ├── admin/           # Sveltia CMS admin panel
 │   └── uploads/         # Media uploads
 ├── astro.config.mjs     # Astro configuration
 ├── tailwind.config.mjs  # Tailwind configuration
@@ -129,6 +129,12 @@ Access the CMS at `/admin` after deploying to Netlify:
 2. Set up Git Gateway
 3. Invite users or enable registration
 4. Start editing content through the web interface
+
+**Note:** This project uses Sveltia CMS, a modern, fast alternative to Decap/Netlify CMS with:
+- 3x smaller bundle size (< 500KB vs 1.5MB)
+- Faster content loading with GraphQL
+- Better mobile support
+- No React dependency conflicts
 
 ## Available Scripts
 

@@ -1,4 +1,19 @@
 #!/usr/bin/env node
+import chalk from 'chalk';
+
+// Check for help flag first
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log(chalk.cyan('💥 Astro Boom! - Create Your Static Site'));
+  console.log('\nUsage:');
+  console.log('  astro-boom                     Interactive mode');
+  console.log('  astro-boom --non-interactive   Non-interactive mode (uses defaults)');
+  console.log('  astro-boom --help              Show this help message');
+  console.log('\nOptions:');
+  console.log('  --non-interactive [name]       Create project with default settings');
+  console.log('  -h, --help                     Show help');
+  process.exit(0);
+}
+
 import React, { useState } from 'react';
 import { render, Text, Box } from 'ink';
 import TextInput from 'ink-text-input';
@@ -7,7 +22,6 @@ import Spinner from 'ink-spinner';
 import { createProject } from './commands/init.js';
 import { setupGitHub } from './commands/github.js';
 import { deployToNetlify } from './commands/deploy.js';
-import chalk from 'chalk';
 
 // Check for non-interactive mode
 if (process.argv.includes('--non-interactive')) {
