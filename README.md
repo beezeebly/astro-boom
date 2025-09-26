@@ -17,7 +17,8 @@
 - **Plausible Analytics** - Privacy-first analytics
 
 📦 **Out of the Box**
-- Pre-configured content collections (Pages, News, Events, People)
+- Customizable content collections (choose News/Blog/Articles, People/Team)
+- Pre-configured content types with empty state handling
 - Responsive navigation and footer
 - Contact and volunteer forms
 - Event management with date filtering
@@ -58,9 +59,11 @@ astro-boom
 
 The CLI will guide you through:
 1. **Project name** - Your site's directory name
-2. **GitHub repository** - Optionally create a private GitHub repo
-3. **Netlify deployment** - Optionally deploy to Netlify
-4. **Analytics** - Choose between Plausible or none
+2. **Content section** - Choose between News, Blog, or Articles
+3. **Members section** - Choose between People or Team
+4. **GitHub repository** - Optionally create a private GitHub repo
+5. **Netlify deployment** - Optionally deploy to Netlify
+6. **Analytics** - Choose between Plausible or none
 
 ### Non-Interactive Mode
 
@@ -70,7 +73,7 @@ For CI/CD pipelines or quick scaffolding:
 npx astro-boom --non-interactive my-project-name
 ```
 
-This creates a project with default settings (no GitHub, no Netlify, no analytics).
+This creates a project with default settings (News/Team labels, no GitHub, no Netlify, no analytics).
 
 ### Quick Start Example
 
@@ -99,12 +102,17 @@ your-site/
 ├── src/
 │   ├── content/          # Content collections
 │   │   ├── pages/        # Static pages
-│   │   ├── news/         # News articles
+│   │   ├── [news/blog/articles]/  # Your chosen content type
 │   │   ├── events/       # Events
-│   │   └── people/       # Team members
+│   │   └── [people/team]/  # Your chosen members type
 │   ├── layouts/          # Page layouts
 │   ├── components/       # Reusable components
-│   └── pages/           # Astro pages
+│   └── pages/            # Astro pages
+│       ├── [news/blog/articles].astro  # Content list page
+│       ├── [news/blog/articles]/       # Content detail pages
+│       ├── events.astro  # Events list page
+│       ├── events/       # Event detail pages
+│       └── [people/team].astro  # Members page
 ├── public/
 │   ├── admin/           # Decap CMS admin panel
 │   └── uploads/         # Media uploads
@@ -158,6 +166,13 @@ netlify deploy --dir=dist --prod
 4. Deploy!
 
 ## Customization
+
+### Collection Names
+During setup, you can choose custom names for your content sections:
+- **Content**: News, Blog, or Articles
+- **Members**: People or Team
+
+These choices affect URLs, navigation labels, and CMS configuration throughout your site.
 
 ### Colors and Typography
 Edit `tailwind.config.mjs` to customize colors and fonts:
