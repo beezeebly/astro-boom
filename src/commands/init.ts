@@ -388,6 +388,300 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>`;
 
   await fs.writeFile(path.join(pagesPath, 'contact.astro'), contactPage);
+
+  // Create news list page
+  const newsListPage = `---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const newsEntries = await getCollection('news');
+const sortedNews = newsEntries
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout title="News">
+  <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <h1 class="text-4xl font-bold mb-8">News</h1>
+
+    {sortedNews.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sortedNews.map((entry) => (
+          <article class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+            {entry.data.image && (
+              <img src={entry.data.image} alt={entry.data.title}
+                   class="w-full h-48 object-cover rounded-lg mb-4" />
+            )}
+            <h2 class="text-xl font-semibold mb-2">
+              <a href={'/news/' + entry.slug} class="hover:text-primary">
+                {entry.data.title}
+              </a>
+            </h2>
+            <time class="text-sm text-gray-500">
+              {entry.data.date.toLocaleDateString()}
+            </time>
+            {entry.data.author && (
+              <p class="text-sm text-gray-600 mt-1">By {entry.data.author}</p>
+            )}
+            <p class="text-gray-600 mt-3">{entry.data.summary}</p>
+            <a href={'/news/' + entry.slug} class="text-primary hover:underline mt-3 inline-block">
+              Read more →
+            </a>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-12">
+        <p class="text-gray-600 text-lg mb-4">No news articles have been published yet.</p>
+        <p class="text-gray-500">Check back soon for updates!</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>`;
+
+  await fs.writeFile(path.join(pagesPath, 'news.astro'), newsListPage);
+
+  // Create events list page
+  const eventsListPage = `---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const events = await getCollection('events');
+const now = new Date();
+
+const upcomingEvents = events
+  .filter(event => event.data.start > now)
+  .sort((a, b) => a.data.start.getTime() - b.data.start.getTime());
+
+const pastEvents = events
+  .filter(event => event.data.start <= now)
+  .sort((a, b) => b.data.start.getTime() - a.data.start.getTime());
+---
+
+<BaseLayout title="Events">
+  <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <h1 class="text-4xl font-bold mb-8">Events</h1>
+
+    <div class="mb-12">
+      <h2 class="text-2xl font-semibold mb-6">Upcoming Events</h2>
+      {upcomingEvents.length > 0 ? (
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {upcomingEvents.map((event) => (
+            <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow">
+              <h3 class="text-xl font-semibold mb-2">
+                <a href={'/events/' + event.slug} class="hover:text-primary">
+                  {event.data.title}
+                </a>
+              </h3>
+              <div class="text-sm text-gray-600 mb-3">
+                <p>📅 {event.data.start.toLocaleDateString()} at {event.data.start.toLocaleTimeString()}</p>
+                {event.data.location && (
+                  <p>📍 {event.data.location}</p>
+                )}
+              </div>
+              <p class="text-gray-600 mb-4">{event.data.description}</p>
+              {event.data.registrationUrl && (
+                <a href={event.data.registrationUrl} target="_blank" rel="noopener noreferrer"
+                   class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 inline-block">
+                  Register Now
+                </a>
+              )}
+              <a href={'/events/' + event.slug} class="text-primary hover:underline ml-4 inline-block">
+                Learn more →
+              </a>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div class="bg-gray-50 rounded-lg p-8 text-center">
+          <p class="text-gray-600 text-lg mb-2">No upcoming events scheduled at this time.</p>
+          <p class="text-gray-500">Check back soon for new events!</p>
+        </div>
+      )}
+    </div>
+
+    {pastEvents.length > 0 && (
+      <div>
+        <h2 class="text-2xl font-semibold mb-6">Past Events</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {pastEvents.slice(0, 4).map((event) => (
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+              <h3 class="text-xl font-semibold mb-2">
+                <a href={'/events/' + event.slug} class="hover:text-primary">
+                  {event.data.title}
+                </a>
+              </h3>
+              <p class="text-sm text-gray-500 mb-2">
+                {event.data.start.toLocaleDateString()}
+              </p>
+              <p class="text-gray-600">{event.data.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+</BaseLayout>`;
+
+  await fs.writeFile(path.join(pagesPath, 'events.astro'), eventsListPage);
+
+  // Create people list page
+  const peopleListPage = `---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const people = await getCollection('people');
+const sortedPeople = people.sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout title="Our Team">
+  <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <h1 class="text-4xl font-bold mb-8">Our Team</h1>
+
+    {sortedPeople.length > 0 ? (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {sortedPeople.map((person) => (
+          <div class="text-center">
+            {person.data.image ? (
+              <img src={person.data.image} alt={person.data.name}
+                   class="w-32 h-32 rounded-full mx-auto mb-4 object-cover" />
+            ) : (
+              <div class="w-32 h-32 rounded-full bg-gray-200 mx-auto mb-4 flex items-center justify-center">
+                <span class="text-3xl text-gray-500">👤</span>
+              </div>
+            )}
+            <h3 class="text-xl font-semibold">{person.data.name}</h3>
+            <p class="text-primary mb-2">{person.data.role}</p>
+            {person.data.bio && (
+              <p class="text-gray-600">{person.data.bio}</p>
+            )}
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-12">
+        <p class="text-gray-600 text-lg mb-4">Team information coming soon.</p>
+        <p class="text-gray-500">We're working on updating our team page.</p>
+      </div>
+    )}
+  </div>
+</BaseLayout>`;
+
+  await fs.writeFile(path.join(pagesPath, 'people.astro'), peopleListPage);
+
+  // Create dynamic news pages directory
+  const newsPath = path.join(pagesPath, 'news');
+  await fs.ensureDir(newsPath);
+
+  const newsDetailPage = `---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const newsEntries = await getCollection('news');
+  return newsEntries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<BaseLayout title={entry.data.title}>
+  <article class="max-w-4xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold mb-4">{entry.data.title}</h1>
+      <div class="text-gray-600">
+        <time>{entry.data.date.toLocaleDateString()}</time>
+        {entry.data.author && (
+          <span> • By {entry.data.author}</span>
+        )}
+      </div>
+    </header>
+
+    {entry.data.image && (
+      <img src={entry.data.image} alt={entry.data.title}
+           class="w-full rounded-lg mb-8" />
+    )}
+
+    <div class="prose prose-lg max-w-none">
+      <p class="lead text-xl text-gray-700 mb-6">{entry.data.summary}</p>
+      <Content />
+    </div>
+
+    <div class="mt-12 pt-8 border-t">
+      <a href="/news" class="text-primary hover:underline">← Back to all news</a>
+    </div>
+  </article>
+</BaseLayout>`;
+
+  await fs.writeFile(path.join(newsPath, '[slug].astro'), newsDetailPage);
+
+  // Create dynamic events pages directory
+  const eventsPath = path.join(pagesPath, 'events');
+  await fs.ensureDir(eventsPath);
+
+  const eventDetailPage = `---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const events = await getCollection('events');
+  return events.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<BaseLayout title={entry.data.title}>
+  <article class="max-w-4xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold mb-4">{entry.data.title}</h1>
+      <div class="bg-gray-50 rounded-lg p-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <h3 class="font-semibold text-gray-700 mb-2">Date & Time</h3>
+            <p>📅 {entry.data.start.toLocaleDateString()}</p>
+            <p>🕐 {entry.data.start.toLocaleTimeString()}</p>
+            {entry.data.end && (
+              <p>Until {entry.data.end.toLocaleTimeString()}</p>
+            )}
+          </div>
+          {entry.data.location && (
+            <div>
+              <h3 class="font-semibold text-gray-700 mb-2">Location</h3>
+              <p>📍 {entry.data.location}</p>
+            </div>
+          )}
+        </div>
+        {entry.data.registrationUrl && (
+          <div class="mt-6">
+            <a href={entry.data.registrationUrl} target="_blank" rel="noopener noreferrer"
+               class="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 inline-block">
+              Register for this Event
+            </a>
+          </div>
+        )}
+      </div>
+    </header>
+
+    <div class="prose prose-lg max-w-none">
+      <p class="lead text-xl text-gray-700 mb-6">{entry.data.description}</p>
+      <Content />
+    </div>
+
+    <div class="mt-12 pt-8 border-t">
+      <a href="/events" class="text-primary hover:underline">← Back to all events</a>
+    </div>
+  </article>
+</BaseLayout>`;
+
+  await fs.writeFile(path.join(eventsPath, '[slug].astro'), eventDetailPage);
 }
 
 async function createComponents(projectPath: string) {
