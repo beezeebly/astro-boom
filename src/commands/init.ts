@@ -8,6 +8,8 @@ const __dirname = dirname(__filename);
 
 interface ProjectOptions {
   name: string;
+  newsLabel: 'news' | 'blog' | 'articles';
+  teamLabel: 'people' | 'team';
   analytics: 'plausible' | 'none';
 }
 
@@ -21,11 +23,11 @@ export async function createProject(options: ProjectOptions) {
   await createTailwindConfig(projectPath);
   await createNetlifyToml(projectPath);
   await createTsConfig(projectPath);
-  await createContentCollections(projectPath);
-  await createLayouts(projectPath);
-  await createPages(projectPath);
-  await createComponents(projectPath);
-  await createAdminPanel(projectPath);
+  await createContentCollections(projectPath, options.newsLabel, options.teamLabel);
+  await createLayouts(projectPath, options.newsLabel, options.teamLabel);
+  await createPages(projectPath, options.newsLabel, options.teamLabel);
+  await createComponents(projectPath, options.newsLabel, options.teamLabel);
+  await createAdminPanel(projectPath, options.newsLabel, options.teamLabel);
   await createPublicAssets(projectPath);
   await createGitignore(projectPath);
 
@@ -133,7 +135,7 @@ async function createTsConfig(projectPath: string) {
   await fs.writeJson(path.join(projectPath, 'tsconfig.json'), config, { spaces: 2 });
 }
 
-async function createContentCollections(projectPath: string) {
+async function createContentCollections(projectPath: string, newsLabel: string, teamLabel: string) {
   const contentPath = path.join(projectPath, 'src', 'content');
   await fs.ensureDir(contentPath);
 
@@ -185,17 +187,17 @@ const peopleCollection = defineCollection({
 
 export const collections = {
   pages: pagesCollection,
-  news: newsCollection,
+  ${newsLabel}: newsCollection,
   events: eventsCollection,
-  people: peopleCollection,
+  ${teamLabel}: peopleCollection,
 };`;
 
   await fs.writeFile(path.join(contentPath, 'config.ts'), config);
 
   await fs.ensureDir(path.join(contentPath, 'pages'));
-  await fs.ensureDir(path.join(contentPath, 'news'));
+  await fs.ensureDir(path.join(contentPath, newsLabel));
   await fs.ensureDir(path.join(contentPath, 'events'));
-  await fs.ensureDir(path.join(contentPath, 'people'));
+  await fs.ensureDir(path.join(contentPath, teamLabel));
 
   const aboutContent = `---
 title: "About Us"
@@ -220,9 +222,13 @@ To bring people together and create positive change through community action and
   await fs.writeFile(path.join(contentPath, 'pages', 'about.md'), aboutContent);
 }
 
-async function createLayouts(projectPath: string) {
+async function createLayouts(projectPath: string, newsLabel: string, teamLabel: string) {
   const layoutPath = path.join(projectPath, 'src', 'layouts');
   await fs.ensureDir(layoutPath);
+
+  // Capitalize first letter for display
+  const newsTitle = newsLabel.charAt(0).toUpperCase() + newsLabel.slice(1);
+  const teamTitle = teamLabel.charAt(0).toUpperCase() + teamLabel.slice(1);
 
   const baseLayout = `---
 export interface Props {
@@ -252,8 +258,9 @@ const { title, description = 'A modern community website' } = Astro.props;
           </div>
           <div class="flex items-center space-x-8">
             <a href="/about" class="text-gray-700 hover:text-primary">About</a>
-            <a href="/news" class="text-gray-700 hover:text-primary">News</a>
+            <a href="/${newsLabel}" class="text-gray-700 hover:text-primary">${newsTitle}</a>
             <a href="/events" class="text-gray-700 hover:text-primary">Events</a>
+            <a href="/${teamLabel}" class="text-gray-700 hover:text-primary">${teamTitle}</a>
             <a href="/contact" class="text-gray-700 hover:text-primary">Contact</a>
           </div>
         </div>
@@ -275,8 +282,9 @@ const { title, description = 'A modern community website' } = Astro.props;
             <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
             <ul class="space-y-2">
               <li><a href="/about" class="text-gray-600 hover:text-primary">About</a></li>
-              <li><a href="/news" class="text-gray-600 hover:text-primary">News</a></li>
+              <li><a href="/${newsLabel}" class="text-gray-600 hover:text-primary">${newsTitle}</a></li>
               <li><a href="/events" class="text-gray-600 hover:text-primary">Events</a></li>
+              <li><a href="/${teamLabel}" class="text-gray-600 hover:text-primary">${teamTitle}</a></li>
             </ul>
           </div>
           <div>
@@ -302,7 +310,11 @@ const { title, description = 'A modern community website' } = Astro.props;
   await fs.writeFile(path.join(layoutPath, 'BaseLayout.astro'), baseLayout);
 }
 
-async function createPages(projectPath: string) {
+async function createPages(projectPath: string, newsLabel: string, teamLabel: string) {
+  // Capitalize first letter for display
+  const newsTitle = newsLabel.charAt(0).toUpperCase() + newsLabel.slice(1);
+  const teamTitle = teamLabel.charAt(0).toUpperCase() + teamLabel.slice(1);
+  const newsPlural = newsLabel === 'blog' ? 'posts' : newsLabel === 'articles' ? 'articles' : 'articles';
   const pagesPath = path.join(projectPath, 'src', 'pages');
   await fs.ensureDir(pagesPath);
 
@@ -394,14 +406,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const newsEntries = await getCollection('news');
+const newsEntries = await getCollection('${newsLabel}');
 const sortedNews = newsEntries
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 ---
 
-<BaseLayout title="News">
+<BaseLayout title="${newsTitle}">
   <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-    <h1 class="text-4xl font-bold mb-8">News</h1>
+    <h1 class="text-4xl font-bold mb-8">${newsTitle}</h1>
 
     {sortedNews.length > 0 ? (
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -412,7 +424,7 @@ const sortedNews = newsEntries
                    class="w-full h-48 object-cover rounded-lg mb-4" />
             )}
             <h2 class="text-xl font-semibold mb-2">
-              <a href={'/news/' + entry.slug} class="hover:text-primary">
+              <a href={'/${newsLabel}/' + entry.slug} class="hover:text-primary">
                 {entry.data.title}
               </a>
             </h2>
@@ -423,7 +435,7 @@ const sortedNews = newsEntries
               <p class="text-sm text-gray-600 mt-1">By {entry.data.author}</p>
             )}
             <p class="text-gray-600 mt-3">{entry.data.summary}</p>
-            <a href={'/news/' + entry.slug} class="text-primary hover:underline mt-3 inline-block">
+            <a href={'/${newsLabel}/' + entry.slug} class="text-primary hover:underline mt-3 inline-block">
               Read more →
             </a>
           </article>
@@ -431,14 +443,14 @@ const sortedNews = newsEntries
       </div>
     ) : (
       <div class="text-center py-12">
-        <p class="text-gray-600 text-lg mb-4">No news articles have been published yet.</p>
+        <p class="text-gray-600 text-lg mb-4">No ${newsPlural} have been published yet.</p>
         <p class="text-gray-500">Check back soon for updates!</p>
       </div>
     )}
   </div>
 </BaseLayout>`;
 
-  await fs.writeFile(path.join(pagesPath, 'news.astro'), newsListPage);
+  await fs.writeFile(path.join(pagesPath, `${newsLabel}.astro`), newsListPage);
 
   // Create events list page
   const eventsListPage = `---
@@ -529,13 +541,13 @@ const pastEvents = events
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
-const people = await getCollection('people');
+const people = await getCollection('${teamLabel}');
 const sortedPeople = people.sort((a, b) => a.data.order - b.data.order);
 ---
 
-<BaseLayout title="Our Team">
+<BaseLayout title="Our ${teamTitle}">
   <div class="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
-    <h1 class="text-4xl font-bold mb-8">Our Team</h1>
+    <h1 class="text-4xl font-bold mb-8">Our ${teamTitle}</h1>
 
     {sortedPeople.length > 0 ? (
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -559,17 +571,17 @@ const sortedPeople = people.sort((a, b) => a.data.order - b.data.order);
       </div>
     ) : (
       <div class="text-center py-12">
-        <p class="text-gray-600 text-lg mb-4">Team information coming soon.</p>
-        <p class="text-gray-500">We're working on updating our team page.</p>
+        <p class="text-gray-600 text-lg mb-4">${teamTitle} information coming soon.</p>
+        <p class="text-gray-500">We're working on updating our ${teamLabel} page.</p>
       </div>
     )}
   </div>
 </BaseLayout>`;
 
-  await fs.writeFile(path.join(pagesPath, 'people.astro'), peopleListPage);
+  await fs.writeFile(path.join(pagesPath, `${teamLabel}.astro`), peopleListPage);
 
   // Create dynamic news pages directory
-  const newsPath = path.join(pagesPath, 'news');
+  const newsPath = path.join(pagesPath, newsLabel);
   await fs.ensureDir(newsPath);
 
   const newsDetailPage = `---
@@ -577,7 +589,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-  const newsEntries = await getCollection('news');
+  const newsEntries = await getCollection('${newsLabel}');
   return newsEntries.map(entry => ({
     params: { slug: entry.slug },
     props: { entry },
@@ -611,7 +623,7 @@ const { Content } = await entry.render();
     </div>
 
     <div class="mt-12 pt-8 border-t">
-      <a href="/news" class="text-primary hover:underline">← Back to all news</a>
+      <a href="/${newsLabel}" class="text-primary hover:underline">← Back to all ${newsLabel}</a>
     </div>
   </article>
 </BaseLayout>`;
@@ -684,9 +696,12 @@ const { Content } = await entry.render();
   await fs.writeFile(path.join(eventsPath, '[slug].astro'), eventDetailPage);
 }
 
-async function createComponents(projectPath: string) {
+async function createComponents(projectPath: string, newsLabel: string, teamLabel: string) {
   const componentsPath = path.join(projectPath, 'src', 'components');
   await fs.ensureDir(componentsPath);
+
+  // Capitalize first letter for display
+  const newsTitle = newsLabel.charAt(0).toUpperCase() + newsLabel.slice(1);
 
   const heroComponent = `---
 ---
@@ -758,20 +773,20 @@ const features = [
   const latestNewsComponent = `---
 import { getCollection } from 'astro:content';
 
-const newsEntries = await getCollection('news');
+const newsEntries = await getCollection('${newsLabel}');
 const latestNews = newsEntries
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
   .slice(0, 3);
 ---
 
 <div>
-  <h2 class="text-2xl font-bold mb-6">Latest News</h2>
+  <h2 class="text-2xl font-bold mb-6">Latest ${newsTitle}</h2>
   {latestNews.length > 0 ? (
     <div class="space-y-4">
       {latestNews.map((entry) => (
         <article class="border-l-4 border-primary pl-4">
           <h3 class="font-semibold text-lg">
-            <a href={'/news/' + entry.slug} class="hover:text-primary">
+            <a href={'/${newsLabel}/' + entry.slug} class="hover:text-primary">
               {entry.data.title}
             </a>
           </h3>
@@ -783,7 +798,7 @@ const latestNews = newsEntries
       ))}
     </div>
   ) : (
-    <p class="text-gray-600">No news articles yet.</p>
+    <p class="text-gray-600">No ${newsLabel} yet.</p>
   )}
 </div>`;
 
@@ -828,9 +843,13 @@ const upcomingEvents = events
   await fs.writeFile(path.join(componentsPath, 'UpcomingEvents.astro'), upcomingEventsComponent);
 }
 
-async function createAdminPanel(projectPath: string) {
+async function createAdminPanel(projectPath: string, newsLabel: string, teamLabel: string) {
   const adminPath = path.join(projectPath, 'public', 'admin');
   await fs.ensureDir(adminPath);
+
+  // Capitalize first letter for display
+  const newsTitle = newsLabel.charAt(0).toUpperCase() + newsLabel.slice(1);
+  const teamTitle = teamLabel.charAt(0).toUpperCase() + teamLabel.slice(1);
 
   const adminHtml = `<!DOCTYPE html>
 <html>
@@ -865,9 +884,9 @@ collections:
       - { label: "Draft", name: "draft", widget: "boolean", default: false }
       - { label: "Body", name: "body", widget: "markdown" }
 
-  - name: "news"
-    label: "News"
-    folder: "src/content/news"
+  - name: "${newsLabel}"
+    label: "${newsTitle}"
+    folder: "src/content/${newsLabel}"
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     fields:
@@ -893,9 +912,9 @@ collections:
       - { label: "Registration URL", name: "registrationUrl", widget: "string", required: false }
       - { label: "Body", name: "body", widget: "markdown" }
 
-  - name: "people"
-    label: "People"
-    folder: "src/content/people"
+  - name: "${teamLabel}"
+    label: "${teamTitle}"
+    folder: "src/content/${teamLabel}"
     create: true
     slug: "{{slug}}"
     fields:

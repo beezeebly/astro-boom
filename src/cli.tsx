@@ -15,7 +15,12 @@ if (process.argv.includes('--non-interactive')) {
   console.log(chalk.cyan('💥 Astro Boom! - Creating project in non-interactive mode'));
   console.log(chalk.blue(`Project: ${projectName}`));
 
-  createProject({ name: projectName, analytics: 'none' })
+  createProject({
+    name: projectName,
+    newsLabel: 'news',
+    teamLabel: 'team',
+    analytics: 'none'
+  })
     .then(() => {
       console.log(chalk.green('✅ Success!'));
       console.log(`Your static site has been created at: ${chalk.cyan(projectName)}`);
@@ -32,8 +37,10 @@ if (process.argv.includes('--non-interactive')) {
 } else {
 
 interface AppState {
-  step: 'name' | 'github' | 'netlify' | 'analytics' | 'creating' | 'done';
+  step: 'name' | 'newsType' | 'teamType' | 'github' | 'netlify' | 'analytics' | 'creating' | 'done';
   projectName: string;
+  newsLabel: 'news' | 'blog' | 'articles';
+  teamLabel: 'people' | 'team';
   createGitHub: boolean;
   deployNetlify: boolean;
   analytics: 'plausible' | 'none';
@@ -45,6 +52,8 @@ const App = () => {
   const [state, setState] = useState<AppState>({
     step: 'name',
     projectName: '',
+    newsLabel: 'news',
+    teamLabel: 'team',
     createGitHub: false,
     deployNetlify: false,
     analytics: 'plausible',
@@ -52,7 +61,15 @@ const App = () => {
   });
 
   const handleProjectName = (value: string) => {
-    setState({ ...state, projectName: value, step: 'github' });
+    setState({ ...state, projectName: value, step: 'newsType' });
+  };
+
+  const handleNewsType = (item: { value: string }) => {
+    setState({ ...state, newsLabel: item.value as 'news' | 'blog' | 'articles', step: 'teamType' });
+  };
+
+  const handleTeamType = (item: { value: string }) => {
+    setState({ ...state, teamLabel: item.value as 'people' | 'team', step: 'github' });
   };
 
   const handleGitHub = (item: { value: boolean }) => {
@@ -74,6 +91,8 @@ const App = () => {
     try {
       await createProject({
         name: state.projectName,
+        newsLabel: state.newsLabel,
+        teamLabel: state.teamLabel,
         analytics: state.analytics
       });
 
@@ -111,6 +130,35 @@ const App = () => {
           <Text>Project name: </Text>
           <TextInput value={state.projectName} onChange={(value) => setState({...state, projectName: value})} onSubmit={handleProjectName} />
         </Box>
+      </Box>
+    );
+  }
+
+  if (state.step === 'newsType') {
+    const items = [
+      { label: 'News - For news and announcements', value: 'news' },
+      { label: 'Blog - For blog posts and articles', value: 'blog' },
+      { label: 'Articles - For written content', value: 'articles' }
+    ];
+
+    return (
+      <Box flexDirection="column">
+        <Text>What would you like to call your content section?</Text>
+        <SelectInput items={items} onSelect={handleNewsType} />
+      </Box>
+    );
+  }
+
+  if (state.step === 'teamType') {
+    const items = [
+      { label: 'Team - For team members', value: 'team' },
+      { label: 'People - For community members', value: 'people' }
+    ];
+
+    return (
+      <Box flexDirection="column">
+        <Text>What would you like to call your members section?</Text>
+        <SelectInput items={items} onSelect={handleTeamType} />
       </Box>
     );
   }
