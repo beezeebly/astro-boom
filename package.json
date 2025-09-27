@@ -1,6 +1,6 @@
 {
   "name": "astro-boom",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "💥 Boom! Instantly create production-ready Astro sites with Tailwind, CMS, and Netlify",
   "main": "dist/cli.js",
   "bin": {

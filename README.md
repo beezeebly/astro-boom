@@ -2,7 +2,7 @@
 
 **Boom!** Create production-ready static sites in seconds. A powerful CLI tool that scaffolds modern websites with Astro, Tailwind CSS, Sveltia CMS, and automatic deployment to Netlify.
 
-[![npm version](https://img.shields.io/npm/v/astro-boom?cache=300)](https://www.npmjs.com/package/astro-boom)
+[![npm version](https://img.shields.io/npm/v/astro-boom?color=brightgreen&cache=300)](https://www.npmjs.com/package/astro-boom)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Features
@@ -70,10 +70,22 @@ The CLI will guide you through:
 For CI/CD pipelines or quick scaffolding:
 
 ```bash
+# Create project only
 npx astro-boom --non-interactive my-project-name
+
+# Create, install deps, and start dev server automatically
+npx astro-boom --non-interactive --auto my-project-name
 ```
 
 This creates a project with default settings (News/Team labels, no GitHub, no Netlify, no analytics).
+
+### Automatic Setup
+
+After creating a project, Astro Boom will ask if you want to automatically:
+- Install dependencies
+- Start the development server
+
+In interactive mode, you'll be prompted. In non-interactive mode, use the `--auto` flag.
 
 ### Quick Start Example
 

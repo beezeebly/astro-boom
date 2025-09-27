@@ -48,16 +48,16 @@ async function createPackageJson(projectPath: string, name: string) {
       astro: "astro"
     },
     dependencies: {
-      "@astrojs/mdx": "^2.0.0",
-      "@astrojs/netlify": "^4.0.0",
-      "@astrojs/tailwind": "^5.0.0",
-      "astro": "^4.0.0",
-      "tailwindcss": "^3.4.0"
+      "@astrojs/mdx": "^4.3.6",
+      "@astrojs/netlify": "^6.5.11",
+      "astro": "^5.14.1",
+      "tailwindcss": "^4.1.13",
+      "@tailwindcss/vite": "^4.1.13"
     },
     devDependencies: {
-      "@pagefind/default-ui": "^1.0.0",
-      "pagefind": "^1.0.0",
-      "@types/node": "^20.0.0"
+      "@pagefind/default-ui": "^1.4.0",
+      "pagefind": "^1.4.0",
+      "@types/node": "^24.5.2"
     }
   };
 
@@ -67,37 +67,64 @@ async function createPackageJson(projectPath: string, name: string) {
 async function createAstroConfig(projectPath: string) {
   const config = `import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
-import tailwind from '@astrojs/tailwind';
 import netlify from '@astrojs/netlify';
+import tailwindvite from '@tailwindcss/vite';
 
+// https://astro.build/config
 export default defineConfig({
-  integrations: [mdx(), tailwind()],
+  integrations: [mdx()],
   output: 'static',
-  adapter: netlify()
+  adapter: netlify(),
+  site: 'https://your-site.netlify.app', // Update with your actual domain
+  vite: {
+    plugins: [tailwindvite()]
+  }
 });`;
 
   await fs.writeFile(path.join(projectPath, 'astro.config.mjs'), config);
 }
 
 async function createTailwindConfig(projectPath: string) {
-  const config = `/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
-  theme: {
-    extend: {
-      colors: {
-        primary: '#2563eb',
-        secondary: '#64748b',
-      },
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      },
-    },
-  },
-  plugins: [],
+  // Tailwind v4 uses CSS-based configuration
+  const globalCss = `@import "tailwindcss";
+
+/* Custom theme configuration for Tailwind v4 */
+@theme {
+  /* Extend colors */
+  --color-primary: #2563eb;
+  --color-secondary: #64748b;
+}
+
+/* Apply custom utilities */
+@utility text-primary {
+  color: var(--color-primary);
+}
+
+@utility bg-primary {
+  background-color: var(--color-primary);
+}
+
+@utility border-primary {
+  border-color: var(--color-primary);
+}
+
+/* Hover states using standard CSS */
+.hover\\:text-primary:hover {
+  color: var(--color-primary);
+}
+
+/* Global styles */
+html {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+body {
+  min-height: 100vh;
 }`;
 
-  await fs.writeFile(path.join(projectPath, 'tailwind.config.mjs'), config);
+  const stylesPath = path.join(projectPath, 'src', 'styles');
+  await fs.ensureDir(stylesPath);
+  await fs.writeFile(path.join(stylesPath, 'global.css'), globalCss);
 }
 
 async function createNetlifyToml(projectPath: string) {
@@ -230,6 +257,8 @@ async function createLayouts(projectPath: string, newsLabel: string, teamLabel: 
   const teamTitle = teamLabel.charAt(0).toUpperCase() + teamLabel.slice(1);
 
   const baseLayout = `---
+import '../styles/global.css';
+
 export interface Props {
   title: string;
   description?: string;

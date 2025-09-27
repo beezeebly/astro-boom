@@ -5,11 +5,13 @@ import chalk from 'chalk';
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log(chalk.cyan('💥 Astro Boom! - Create Your Static Site'));
   console.log('\nUsage:');
-  console.log('  astro-boom                     Interactive mode');
-  console.log('  astro-boom --non-interactive   Non-interactive mode (uses defaults)');
-  console.log('  astro-boom --help              Show this help message');
+  console.log('  astro-boom                                    Interactive mode');
+  console.log('  astro-boom --non-interactive [name]           Non-interactive mode');
+  console.log('  astro-boom --non-interactive --auto [name]    Auto-install and start dev server');
+  console.log('  astro-boom --help                             Show this help message');
   console.log('\nOptions:');
   console.log('  --non-interactive [name]       Create project with default settings');
+  console.log('  --auto                         Auto-install deps and start dev server (with --non-interactive)');
   console.log('  -h, --help                     Show help');
   process.exit(0);
 }
@@ -18,10 +20,11 @@ import React, { useState } from 'react';
 import { render, Text, Box } from 'ink';
 import TextInput from 'ink-text-input';
 import SelectInput from 'ink-select-input';
-import Spinner from 'ink-spinner';
+import { default as Spinner } from 'ink-spinner';
 import { createProject } from './commands/init.js';
 import { setupGitHub } from './commands/github.js';
 import { deployToNetlify } from './commands/deploy.js';
+import path from 'path';
 
 // Check for non-interactive mode
 if (process.argv.includes('--non-interactive')) {
@@ -35,14 +38,46 @@ if (process.argv.includes('--non-interactive')) {
     teamLabel: 'team',
     analytics: 'none'
   })
-    .then(() => {
+    .then(async () => {
       console.log(chalk.green('✅ Success!'));
       console.log(`Your static site has been created at: ${chalk.cyan(projectName)}`);
-      console.log('\nNext steps:');
-      console.log(`  cd ${projectName}`);
-      console.log('  npm install');
-      console.log('  npm run dev');
-      process.exit(0);
+
+      // Check if --auto flag is present for automatic setup
+      if (process.argv.includes('--auto')) {
+        const projectPath = path.join(process.cwd(), projectName);
+        console.log(chalk.blue('\n📦 Installing dependencies...'));
+
+        const { execaSync } = await import('execa');
+        try {
+          execaSync('npm', ['install'], { cwd: projectPath, stdio: 'inherit' });
+
+          console.log(chalk.green('\n✅ Dependencies installed!'));
+          console.log(chalk.blue('\n🚀 Starting development server...'));
+          console.log(chalk.gray('\nPress Ctrl+C to stop the server\n'));
+
+          execaSync('npm', ['run', 'dev'], { cwd: projectPath, stdio: 'inherit' });
+        } catch (error: any) {
+          if (error.signal === 'SIGINT') {
+            console.log(chalk.yellow('\n\n👋 Development server stopped'));
+            console.log(chalk.cyan(`\nTo start again:\n  cd ${projectName}\n  npm run dev`));
+          } else {
+            console.error(chalk.red('\n❌ Error during setup:'), error.message);
+            console.log(chalk.yellow('\nPlease run manually:'));
+            console.log(chalk.cyan(`  cd ${projectName}`));
+            console.log(chalk.cyan('  npm install'));
+            console.log(chalk.cyan('  npm run dev'));
+          }
+          process.exit(error.signal === 'SIGINT' ? 0 : 1);
+        }
+      } else {
+        console.log('\nNext steps:');
+        console.log(chalk.cyan(`  cd ${projectName}`));
+        console.log(chalk.cyan('  npm install'));
+        console.log(chalk.cyan('  npm run dev'));
+        console.log(chalk.gray('\nOr run with --auto flag to automatically install and start:'));
+        console.log(chalk.gray(`  npx astro-boom --non-interactive --auto ${projectName}`));
+        process.exit(0);
+      }
     })
     .catch((error) => {
       console.error(chalk.red('❌ Error:'), error.message);
@@ -50,8 +85,10 @@ if (process.argv.includes('--non-interactive')) {
     });
 } else {
 
+let unmount: any;
+
 interface AppState {
-  step: 'name' | 'newsType' | 'teamType' | 'github' | 'netlify' | 'analytics' | 'creating' | 'done';
+  step: 'name' | 'newsType' | 'teamType' | 'github' | 'netlify' | 'analytics' | 'creating' | 'done' | 'autoSetup';
   projectName: string;
   newsLabel: 'news' | 'blog' | 'articles';
   teamLabel: 'people' | 'team';
@@ -59,6 +96,7 @@ interface AppState {
   deployNetlify: boolean;
   analytics: 'plausible' | 'none';
   isCreating: boolean;
+  autoInstall?: boolean;
   error?: string;
 }
 
@@ -230,18 +268,76 @@ const App = () => {
   }
 
   if (state.step === 'done') {
+    const handleAutoSetup = (item: any) => {
+      if (item.value) {
+        setState(prev => ({ ...prev, step: 'autoSetup', autoInstall: true }));
+
+        const projectPath = path.join(process.cwd(), state.projectName);
+
+        // Exit Ink render and run commands
+        unmount();
+
+        console.log(chalk.blue('\n📦 Installing dependencies...'));
+
+        import('execa').then(({ execaSync }) => {
+          try {
+            execaSync('npm', ['install'], { cwd: projectPath, stdio: 'inherit' });
+
+            console.log(chalk.green('\n✅ Dependencies installed!'));
+            console.log(chalk.blue('\n🚀 Starting development server...'));
+            console.log(chalk.gray('\nPress Ctrl+C to stop the server\n'));
+
+            execaSync('npm', ['run', 'dev'], { cwd: projectPath, stdio: 'inherit' });
+          } catch (error: any) {
+            if (error.signal === 'SIGINT') {
+              console.log(chalk.yellow('\n\n👋 Development server stopped'));
+              console.log(chalk.cyan(`\nTo start again:\n  cd ${state.projectName}\n  npm run dev`));
+            } else {
+              console.error(chalk.red('\n❌ Error during setup:'), error.message);
+              console.log(chalk.yellow('\nPlease run manually:'));
+              console.log(chalk.cyan(`  cd ${state.projectName}`));
+              console.log(chalk.cyan('  npm install'));
+              console.log(chalk.cyan('  npm run dev'));
+            }
+            process.exit(error.signal === 'SIGINT' ? 0 : 1);
+          }
+        });
+      } else {
+        unmount();
+        console.log(chalk.green('\n✨ Your project is ready!'));
+        console.log(chalk.yellow('\nNext steps:'));
+        console.log(chalk.cyan(`  cd ${state.projectName}`));
+        console.log(chalk.cyan('  npm install'));
+        console.log(chalk.cyan('  npm run dev'));
+        process.exit(0);
+      }
+    };
+
+    const items = [
+      { label: 'Yes, install dependencies and start dev server', value: true },
+      { label: 'No, I\'ll do it manually', value: false }
+    ];
+
     return (
       <Box flexDirection="column">
         <Text color="green" bold>✅ Success!</Text>
         <Box marginTop={1} flexDirection="column">
           <Text>Your static site has been created at: {chalk.cyan(state.projectName)}</Text>
           <Box marginTop={1} flexDirection="column">
-            <Text bold>Next steps:</Text>
-            <Text>  cd {state.projectName}</Text>
-            <Text>  npm install</Text>
-            <Text>  npm run dev</Text>
+            <Text bold>Would you like to install dependencies and start the dev server?</Text>
+            <SelectInput items={items} onSelect={handleAutoSetup} />
           </Box>
         </Box>
+      </Box>
+    );
+  }
+
+  if (state.step === 'autoSetup') {
+    return (
+      <Box flexDirection="column">
+        <Text color="blue">
+          <Spinner type="dots" /> Setting up your project...
+        </Text>
       </Box>
     );
   }
@@ -249,5 +345,6 @@ const App = () => {
   return null;
 };
 
-render(<App />);
+const app = render(<App />);
+unmount = app.unmount;
 }
